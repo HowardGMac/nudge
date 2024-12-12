@@ -229,17 +229,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     allVersions.sort { VersionManager.versionLessThan(currentVersion: $0, newVersion: $1) }
 
                     // Filter versions between current and selected OS version
-                    let filteredVersions = VersionManager().removeDuplicates(from: allVersions.filter {
+                    var filteredVersions = VersionManager().removeDuplicates(from: allVersions.filter {
                         VersionManager.versionGreaterThanOrEqual(currentVersion: $0, newVersion: currentInstalledVersion) &&
                         VersionManager.versionLessThanOrEqual(currentVersion: $0, newVersion: selectedOSVersion)
                     })
+                    // Remove the current installed version from filteredVersions
+                    filteredVersions.removeAll(where: {$0 == currentInstalledVersion} )
 
                     // Filter versions with the same major version as the current installed version
                     var minorVersions = VersionManager().removeDuplicates(from: filteredVersions.filter { version in
                         VersionManager.getMajorVersion(from: version) == currentMajorVersion
                     })
-                    // Remove the current installed version from minorVersions
-                    minorVersions.removeAll { $0 == currentInstalledVersion }
 
                     // Count actively exploited CVEs in the filtered versions
                     LogManager.notice("Assessing macOS version range for active exploits: \(filteredVersions) ", logger: sofaLog)
